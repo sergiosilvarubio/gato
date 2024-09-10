@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cstdint>
 
 #include "board.hpp"
 
@@ -10,12 +9,38 @@ Board::Board()
     board[X] = 0b000000000; // Bitboard para X
     board[O] = 0b000000000; // Bitboard para O
     turn = X;  // Comienza jugando X
-
-    oneMask = 0b000000001;
-    fullMask = 0b111111111;
 }
 
+Board::Board(uint16_t x, uint16_t o, MARK turn): board{x, o}, turn(turn) {}
+
 Board::~Board() = default;
+
+uint16_t Board::getXBoard() const { return board[X]; }
+uint16_t Board::getOBoard() const { return board[O]; }
+MARK Board::getActiveTurn() const { return turn; }
+
+int Board::evaluate(int depth)
+{
+    /* Si ha ganado, devolvemos un puntaje positivo
+     * Se resta la profundidad para penalizar las victorias que ocurren en niveles más profundos.
+     * Esto hace que el algoritmo prefiera ganar más rápidamente si es posible.
+     */
+    if (hasXWon())
+        return (turn == X) ? (10 - depth) : (depth - 10);  // Si 'X' ha ganado, es bueno para el maximizador (X)
+    if (hasOWon())
+        return (turn == O) ? (10 - depth) : (depth - 10); // Si 'O' ha ganado, es bueno para el minimizador (O)
+    if (isFull())
+        return 0;  // Empate
+}
+
+std::vector<int> Board::generateAllLegalMoves()
+{
+    std::vector<int> legalMoves;
+    for (int i = 0; i < 9; i++)
+        if (isLegalMove(i))
+            legalMoves.push_back(i);
+    return legalMoves;
+}
 
 bool Board::isLegalMove(int position)
 {
@@ -34,6 +59,11 @@ bool Board::makeMove(int position)
         return true;
     }
     return false;
+}
+
+void Board::undoMove(int position)
+{
+    board[turn] ^= (oneMask << position);
 }
 
 bool Board::checkWin(uint16_t board)
@@ -59,6 +89,11 @@ bool Board::hasOWon() { return checkWin(board[O]); }
 bool Board::isFull()
 {
     return (board[X] | board[O]) == fullMask;
+}
+
+bool Board::endGame()
+{
+    return hasXWon() || hasOWon() || isFull();
 }
 
 void Board::print()
