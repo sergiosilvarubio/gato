@@ -3,4 +3,4 @@ project(gato)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(gato src/main.cpp src/board.hpp src/board.cpp)
+add_executable(gato src/main.cpp src/board.hpp src/board.cpp src/TTEntry.h)

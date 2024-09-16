@@ -11,7 +11,7 @@ Board::Board()
     turn = X;  // Comienza jugando X
 }
 
-Board::Board(uint16_t x, uint16_t o, MARK turn): board{x, o}, turn(turn) {}
+Board::Board(const uint16_t x, const uint16_t o, const MARK turn): board{x, o}, turn(turn) {}
 
 Board::~Board() = default;
 
@@ -19,7 +19,7 @@ uint16_t Board::getXBoard() const { return board[X]; }
 uint16_t Board::getOBoard() const { return board[O]; }
 MARK Board::getActiveTurn() const { return turn; }
 
-int Board::evaluate(int depth)
+int Board::evaluate(const int depth)
 {
     /* Si ha ganado, devolvemos un puntaje positivo
      * Se resta la profundidad para penalizar las victorias que ocurren en niveles más profundos.
@@ -33,7 +33,7 @@ int Board::evaluate(int depth)
         return 0;  // Empate
 }
 
-std::vector<int> Board::generateAllLegalMoves()
+std::vector<int> Board::generateAllLegalMoves() const
 {
     std::vector<int> legalMoves;
     for (int i = 0; i < 9; i++)
@@ -42,7 +42,7 @@ std::vector<int> Board::generateAllLegalMoves()
     return legalMoves;
 }
 
-bool Board::isLegalMove(int position)
+bool Board::isLegalMove(const int position) const
 {
     if (position < 0 || position > 8)  // posicion dentro del rango?
         return false;
@@ -51,7 +51,7 @@ bool Board::isLegalMove(int position)
     return true;
 }
 
-bool Board::makeMove(int position)
+bool Board::makeMove(const int position)
 {
     if (isLegalMove(position)) {
         board[turn] |= (oneMask << position);
@@ -59,11 +59,6 @@ bool Board::makeMove(int position)
         return true;
     }
     return false;
-}
-
-void Board::undoMove(int position)
-{
-    board[turn] ^= (oneMask << position);
 }
 
 bool Board::checkWin(uint16_t board)
@@ -83,20 +78,12 @@ bool Board::checkWin(uint16_t board)
     return false;
 }
 
-bool Board::hasXWon() { return checkWin(board[X]); }
-bool Board::hasOWon() { return checkWin(board[O]); }
+bool Board::hasXWon() const { return checkWin(board[X]); }
+bool Board::hasOWon() const { return checkWin(board[O]); }
+bool Board::isFull() const { return (board[X] | board[O]) == fullMask; }
+bool Board::endGame() const { return hasXWon() || hasOWon() || isFull(); }
 
-bool Board::isFull()
-{
-    return (board[X] | board[O]) == fullMask;
-}
-
-bool Board::endGame()
-{
-    return hasXWon() || hasOWon() || isFull();
-}
-
-void Board::print()
+void Board::print() const
 {
     for (int i = 0; i < 9; i++) {  // 9 casillas
         // cada casilla i se compara con ambos tableros para ver si hay una X o O
